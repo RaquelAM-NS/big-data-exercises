@@ -30,12 +30,12 @@ public class MovieRecommender{
     private int reviews = 0;
     private long totalProd = 0;
     private long totalUsers = 0;
-    HashMap<String, Long> productsTotal = new HashMap<String, Long>();
-    HashMap<Long, String> productsTotalReverse = new HashMap<Long, String>();
-    HashMap<String, Long> usersTotal = new HashMap<String, Long>();
-    List<String> products = new ArrayList<String>();
-    List<String> users = new ArrayList<String>();
-    List<String> scores = new ArrayList<String>();
+    HashMap<String, Long> productsTotal = new HashMap<>();
+    HashMap<Long, String> productsTotalReverse = new HashMap<>();
+    HashMap<String, Long> usersTotal = new HashMap<>();
+    List<String> products = new ArrayList<>();
+    List<String> users = new ArrayList<>();
+    List<String> scores = new ArrayList<>();
     PrintWriter out = new PrintWriter(new FileWriter("movies.csv"));
 
     public MovieRecommender (String filename) throws IOException{
@@ -77,14 +77,15 @@ public class MovieRecommender{
                 }
                 
             }
-
+        }
+        catch(IOException e){
+            System.out.println("Error loading file!");
+        }
+        finally{
             for (String idProd : productsTotal.keySet()) {
                 productsTotalReverse.put(productsTotal.get(idProd),idProd);
             } 
             out.close();
-        }
-        catch(IOException e){
-            System.out.println("Error loading file!");
         }
 
     }
