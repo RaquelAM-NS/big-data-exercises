@@ -77,14 +77,14 @@ public class MovieRecommender{
                 }
                 
             }
+            for (String idProd : productsTotal.keySet()) {
+                productsTotalReverse.put(productsTotal.get(idProd),idProd);
+            } 
         }
         catch(IOException e){
             System.out.println("Error loading file!");
         }
         finally{
-            for (String idProd : productsTotal.keySet()) {
-                productsTotalReverse.put(productsTotal.get(idProd),idProd);
-            } 
             out.close();
         }
 
