@@ -33,9 +33,9 @@ public class MovieRecommender{
     HashMap<String, Long> productsTotal = new HashMap<String, Long>();
     HashMap<Long, String> productsTotalReverse = new HashMap<Long, String>();
     HashMap<String, Long> usersTotal = new HashMap<String, Long>();
-    ArrayList<String> products = new ArrayList<String>();
-    ArrayList<String> users = new ArrayList<String>();
-    ArrayList<String> scores = new ArrayList<String>();
+    List<String> products = new ArrayList<String>();
+    List<String> users = new ArrayList<String>();
+    List<String> scores = new ArrayList<String>();
     PrintWriter out = new PrintWriter(new FileWriter("movies.csv"));
 
     public MovieRecommender (String filename) throws IOException{
@@ -43,44 +43,49 @@ public class MovieRecommender{
         getData();
     }
 
-    public void getData() throws IOException{
-        String line;
-        String idProduct="";
-        String idUser="";
-        String score;
-        InputStream fileStream = new FileInputStream(filename);
-        InputStream gzipStream = new GZIPInputStream(fileStream);
-        Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
-        BufferedReader buffered = new BufferedReader(decoder);
+    public void getData(){
+        try{
+            String line;
+            String idProduct="";
+            String idUser="";
+            String score;
+            InputStream fileStream = new FileInputStream(filename);
+            InputStream gzipStream = new GZIPInputStream(fileStream);
+            Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
+            BufferedReader buffered = new BufferedReader(decoder);
 
-        while ((line = buffered.readLine()) != null){
-            if(line.indexOf("product/productId:") != -1){
-                reviews++;
-                idProduct = line.replace("product/productId: ","");
-                if(!productsTotal.containsKey(idProduct)){
-                    productsTotal.put(idProduct, totalProd);
-                    totalProd++;
+            while ((line = buffered.readLine()) != null){
+                if(line.indexOf("product/productId:") != -1){
+                    reviews++;
+                    idProduct = line.replace("product/productId: ","");
+                    if(!productsTotal.containsKey(idProduct)){
+                        productsTotal.put(idProduct, totalProd);
+                        totalProd++;
+                    }
                 }
-            }
-            if(line.indexOf("review/userId:") != -1){
-                idUser = line.replace("review/userId: ","");
-                if(!usersTotal.containsKey(idUser)){
-                    usersTotal.put(idUser, totalUsers);
-                    totalUsers++;
+                if(line.indexOf("review/userId:") != -1){
+                    idUser = line.replace("review/userId: ","");
+                    if(!usersTotal.containsKey(idUser)){
+                        usersTotal.put(idUser, totalUsers);
+                        totalUsers++;
+                    }
                 }
+                if(line.indexOf("review/score") != -1){
+                    score = line.replace("review/score: ","");
+                    scores.add(score);
+                    out.println(usersTotal.get(idUser) + "," +productsTotal.get(idProduct)+ "," + score);
+                }
+                
             }
-            if(line.indexOf("review/score") != -1){
-                score = line.replace("review/score: ","");
-                scores.add(score);
-                out.println(usersTotal.get(idUser) + "," +productsTotal.get(idProduct)+ "," + score);
-            }
-            
+
+            for (String idProd : productsTotal.keySet()) {
+                productsTotalReverse.put(productsTotal.get(idProd),idProd);
+            } 
+            out.close();
         }
-
-        for (String idProd : productsTotal.keySet()) {
-            productsTotalReverse.put(productsTotal.get(idProd),idProd);
-        } 
-        out.close();
+        catch(IOException e){
+            System.out.println("Error loading file!");
+        }
 
     }
 
