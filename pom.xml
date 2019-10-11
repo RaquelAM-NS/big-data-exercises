@@ -14,18 +14,20 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>7</maven.compiler.source>
     <maven.compiler.target>7</maven.compiler.target>
+    <apacheMahoutVersion>0.9</apacheMahoutVersion>
+    <junitVersion>4.7</junitVersion>
   </properties>
 
   <dependencies>
       <dependency>
           <groupId>org.apache.mahout</groupId>
           <artifactId>mahout-core</artifactId>
-          <version>0.9</version>
+          <version>${apacheMahoutVersion}</version>
       </dependency>
       <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
-          <version>4.7</version>
+          <version>${junitVersion}</version>
           <scope>test</scope>
       </dependency>
   </dependencies>

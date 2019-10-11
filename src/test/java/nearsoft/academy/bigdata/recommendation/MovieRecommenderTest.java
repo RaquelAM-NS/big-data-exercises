@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
+
 public class MovieRecommenderTest {
     @Test
     public void testDataInfo() throws IOException, TasteException {

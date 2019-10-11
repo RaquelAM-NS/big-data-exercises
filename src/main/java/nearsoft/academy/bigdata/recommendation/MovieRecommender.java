@@ -1,0 +1,142 @@
+package nearsoft.academy.bigdata.recommendation;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
+import org.apache.mahout.cf.taste.impl.neighborhood.ThresholdUserNeighborhood;
+import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
+import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
+import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
+import org.apache.mahout.cf.taste.similarity.UserSimilarity;
+
+
+public class MovieRecommender{
+    private final String filename;
+    private int reviews;
+    private long totalProd;
+    private long totalUsers;
+    private boolean isDataLoaded = false;
+    private String productString = "product/productId: ";
+    private String userString = "review/userId: ";
+    private String scoreString = "review/score: ";
+    Map<String, Long> productsTotal = new HashMap<>();
+    Map<Long, String> productsTotalReverse = new HashMap<>();
+    Map<String, Long> allUsers = new HashMap<>();
+    List<String> scores = new ArrayList<>();
+    PrintWriter out = new PrintWriter(new FileWriter("movies.csv"));
+
+    public MovieRecommender (String filename) throws IOException{
+        this.filename = filename;
+    }
+
+    public void loadData(){
+        try{
+            InputStream fileStream = new FileInputStream(filename);
+            InputStream gzipStream = new GZIPInputStream(fileStream);
+            Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
+            BufferedReader buffered = new BufferedReader(decoder);
+            isDataLoaded = true;
+            crateDataStructure(buffered);
+        }
+        catch(IOException e){
+            System.out.println("Error loading file!");
+        }
+    }
+
+    public void crateDataStructure(BufferedReader buffered){
+        try{
+            String line;
+            String idProduct="";
+            String idUser="";
+            String score;
+
+            while ((line = buffered.readLine()) != null){
+                if(line.contains(productString)){
+                    reviews++;
+                    idProduct = line.replace(productString,"");
+                    if(!productsTotal.containsKey(idProduct)){
+                        productsTotal.put(idProduct, totalProd);
+                        totalProd++;
+                    }
+                }
+                if(line.contains(userString)){
+                    idUser = line.replace(userString,"");
+                    if(!allUsers.containsKey(idUser)){
+                        allUsers.put(idUser, totalUsers);
+                        totalUsers++;
+                    }
+                }
+                if(line.contains(scoreString)){
+                    score = line.replace(scoreString,"");
+                    scores.add(score);
+                    out.println(allUsers.get(idUser) + "," +productsTotal.get(idProduct)+ "," + score);
+                }
+                
+            }
+            for (String idProd : productsTotal.keySet()) {
+                productsTotalReverse.put(productsTotal.get(idProd),idProd);
+            } 
+        }
+        catch(IOException e){
+            System.out.println("Error creating data structures!");
+        }
+        finally{
+            out.close();
+        }
+    }
+
+    public int getTotalReviews(){
+        if(isDataLoaded == false){
+            loadData();
+        }
+        return reviews;
+    }
+
+    public int getTotalProducts(){
+        if(isDataLoaded == false){
+            loadData();
+        }
+        return productsTotal.size();
+    }
+
+    public int getTotalUsers(){
+        if(isDataLoaded == false){
+            loadData();
+        }
+        return allUsers.size();
+    }
+
+    public List<String> getRecommendationsForUser(String user) throws IOException, TasteException {
+        if(isDataLoaded == false){
+            loadData();
+        }
+        DataModel model = new FileDataModel(new File("movies.csv"));
+        UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
+        UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.1, similarity, model);
+        UserBasedRecommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
+
+
+        List<String> RecommendedProducts = new ArrayList<String>();
+        List<RecommendedItem> recommendations = recommender.recommend(allUsers.get(user),3);
+        for (RecommendedItem recommendation : recommendations) {
+            RecommendedProducts.add(productsTotalReverse.get((long)recommendation.getItemID()));
+        }
+        return RecommendedProducts; 
+    } 
+}
