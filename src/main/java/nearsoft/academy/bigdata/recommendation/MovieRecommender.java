@@ -33,9 +33,7 @@ public class MovieRecommender{
     private long totalUsers;
     Map<String, Long> productsTotal = new HashMap<>();
     Map<Long, String> productsTotalReverse = new HashMap<>();
-    Map<String, Long> usersTotal = new HashMap<>();
-    List<String> products = new ArrayList<>();
-    List<String> users = new ArrayList<>();
+    Map<String, Long> allUsers = new HashMap<>();
     List<String> scores = new ArrayList<>();
     PrintWriter out = new PrintWriter(new FileWriter("movies.csv"));
 
@@ -66,15 +64,15 @@ public class MovieRecommender{
                 }
                 if(line.indexOf("review/userId:") != -1){
                     idUser = line.replace("review/userId: ","");
-                    if(!usersTotal.containsKey(idUser)){
-                        usersTotal.put(idUser, totalUsers);
+                    if(!allUsers.containsKey(idUser)){
+                        allUsers.put(idUser, totalUsers);
                         totalUsers++;
                     }
                 }
                 if(line.indexOf("review/score") != -1){
                     score = line.replace("review/score: ","");
                     scores.add(score);
-                    out.println(usersTotal.get(idUser) + "," +productsTotal.get(idProduct)+ "," + score);
+                    out.println(allUsers.get(idUser) + "," +productsTotal.get(idProduct)+ "," + score);
                 }
                 
             }
@@ -100,7 +98,7 @@ public class MovieRecommender{
     }
 
     public int getTotalUsers(){
-        return usersTotal.size();
+        return allUsers.size();
     }
 
     public List<String> getRecommendationsForUser(String user) throws IOException, TasteException {
@@ -111,7 +109,7 @@ public class MovieRecommender{
 
 
         List<String> RecommendedProducts = new ArrayList<String>();
-        List<RecommendedItem> recommendations = recommender.recommend(usersTotal.get(user),3);
+        List<RecommendedItem> recommendations = recommender.recommend(allUsers.get(user),3);
         for (RecommendedItem recommendation : recommendations) {
             RecommendedProducts.add(productsTotalReverse.get((long)recommendation.getItemID()));
         }
