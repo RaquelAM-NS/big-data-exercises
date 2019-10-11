@@ -3,6 +3,7 @@ package nearsoft.academy.bigdata.recommendation;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -27,12 +28,12 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 public class MovieRecommender{
     private final String filename;
-    private int reviews = 0;
-    private long totalProd = 0;
-    private long totalUsers = 0;
-    HashMap<String, Long> productsTotal = new HashMap<>();
-    HashMap<Long, String> productsTotalReverse = new HashMap<>();
-    HashMap<String, Long> usersTotal = new HashMap<>();
+    private int reviews;
+    private long totalProd;
+    private long totalUsers;
+    Map<String, Long> productsTotal = new HashMap<>();
+    Map<Long, String> productsTotalReverse = new HashMap<>();
+    Map<String, Long> usersTotal = new HashMap<>();
     List<String> products = new ArrayList<>();
     List<String> users = new ArrayList<>();
     List<String> scores = new ArrayList<>();
