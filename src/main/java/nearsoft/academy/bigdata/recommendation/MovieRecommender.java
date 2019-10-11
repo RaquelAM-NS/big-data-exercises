@@ -31,6 +31,10 @@ public class MovieRecommender{
     private int reviews;
     private long totalProd;
     private long totalUsers;
+    private boolean isDataLoaded = false;
+    private String productString = "product/productId: ";
+    private String userString = "review/userId: ";
+    private String scoreString = "review/score: ";
     Map<String, Long> productsTotal = new HashMap<>();
     Map<Long, String> productsTotalReverse = new HashMap<>();
     Map<String, Long> allUsers = new HashMap<>();
@@ -39,38 +43,47 @@ public class MovieRecommender{
 
     public MovieRecommender (String filename) throws IOException{
         this.filename = filename;
-        getData();
     }
 
-    public void getData(){
+    public void loadData(){
+        try{
+            InputStream fileStream = new FileInputStream(filename);
+            InputStream gzipStream = new GZIPInputStream(fileStream);
+            Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
+            BufferedReader buffered = new BufferedReader(decoder);
+            isDataLoaded = true;
+            crateDataStructure(buffered);
+        }
+        catch(IOException e){
+            System.out.println("Error loading file!");
+        }
+    }
+
+    public void crateDataStructure(BufferedReader buffered){
         try{
             String line;
             String idProduct="";
             String idUser="";
             String score;
-            InputStream fileStream = new FileInputStream(filename);
-            InputStream gzipStream = new GZIPInputStream(fileStream);
-            Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
-            BufferedReader buffered = new BufferedReader(decoder);
 
             while ((line = buffered.readLine()) != null){
-                if(line.contains("product/productId:")){
+                if(line.contains(productString)){
                     reviews++;
-                    idProduct = line.replace("product/productId: ","");
+                    idProduct = line.replace(productString,"");
                     if(!productsTotal.containsKey(idProduct)){
                         productsTotal.put(idProduct, totalProd);
                         totalProd++;
                     }
                 }
-                if(line.contains("review/userId:")){
-                    idUser = line.replace("review/userId: ","");
+                if(line.contains(userString)){
+                    idUser = line.replace(userString,"");
                     if(!allUsers.containsKey(idUser)){
                         allUsers.put(idUser, totalUsers);
                         totalUsers++;
                     }
                 }
-                if(line.contains("review/score")){
-                    score = line.replace("review/score: ","");
+                if(line.contains(scoreString)){
+                    score = line.replace(scoreString,"");
                     scores.add(score);
                     out.println(allUsers.get(idUser) + "," +productsTotal.get(idProduct)+ "," + score);
                 }
@@ -81,27 +94,38 @@ public class MovieRecommender{
             } 
         }
         catch(IOException e){
-            System.out.println("Error loading file!");
+            System.out.println("Error creating data structures!");
         }
         finally{
             out.close();
         }
-
     }
 
     public int getTotalReviews(){
+        if(isDataLoaded == false){
+            loadData();
+        }
         return reviews;
     }
 
     public int getTotalProducts(){
+        if(isDataLoaded == false){
+            loadData();
+        }
         return productsTotal.size();
     }
 
     public int getTotalUsers(){
+        if(isDataLoaded == false){
+            loadData();
+        }
         return allUsers.size();
     }
 
     public List<String> getRecommendationsForUser(String user) throws IOException, TasteException {
+        if(isDataLoaded == false){
+            loadData();
+        }
         DataModel model = new FileDataModel(new File("movies.csv"));
         UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
         UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.1, similarity, model);
