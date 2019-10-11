@@ -54,7 +54,7 @@ public class MovieRecommender{
             BufferedReader buffered = new BufferedReader(decoder);
 
             while ((line = buffered.readLine()) != null){
-                if(line.indexOf("product/productId:") != -1){
+                if(line.contains("product/productId:")){
                     reviews++;
                     idProduct = line.replace("product/productId: ","");
                     if(!productsTotal.containsKey(idProduct)){
@@ -62,14 +62,14 @@ public class MovieRecommender{
                         totalProd++;
                     }
                 }
-                if(line.indexOf("review/userId:") != -1){
+                if(line.contains("review/userId:")){
                     idUser = line.replace("review/userId: ","");
                     if(!allUsers.containsKey(idUser)){
                         allUsers.put(idUser, totalUsers);
                         totalUsers++;
                     }
                 }
-                if(line.indexOf("review/score") != -1){
+                if(line.contains("review/score")){
                     score = line.replace("review/score: ","");
                     scores.add(score);
                     out.println(allUsers.get(idUser) + "," +productsTotal.get(idProduct)+ "," + score);
